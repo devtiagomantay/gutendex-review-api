@@ -1,9 +1,22 @@
 from flask import Flask, request
+from flask_sqlalchemy import SQLAlchemy
 import requests
 from flask_expects_json import expects_json
 
-
 app = Flask(__name__)
+db = SQLAlchemy(app)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE_NAME}'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+
+class Review(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    book_id = db.Column(db.Integer, nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    review = db.Column(db.String(500))
+
+
 schema = {
     "type": "object",
     "properties": {
@@ -18,7 +31,6 @@ schema = {
 @app.route('/books/review', methods=['POST'])
 @expects_json(schema)
 def review():
-
     payload = request.json
     return request.json
 
@@ -45,5 +57,5 @@ def request_gutendex(bookname):
 
 
 if __name__ == '__main__':
+    db.create_all()
     app.run()
-
