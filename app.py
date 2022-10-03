@@ -1,11 +1,24 @@
 from flask import Flask, request
 import requests
+from flask_expects_json import expects_json
+
 
 app = Flask(__name__)
+schema = {
+    "type": "object",
+    "properties": {
+        "bookId": {"type": "number"},
+        "rating": {"type": "number"},
+        "review": {"type": "string"},
+    },
+    "required": ["bookId", "rating", "review"]
+}
 
 
 @app.route('/books/review', methods=['POST'])
+@expects_json(schema)
 def review():
+
     payload = request.json
     return request.json
 
