@@ -1,3 +1,5 @@
+import http
+
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 import requests
@@ -31,13 +33,17 @@ schema = {
 @app.route('/books/review', methods=['POST'])
 @expects_json(schema)
 def review():
-    payload = request.json
-    return request.json
+    try:
+        payload = request.json
+        save_review(payload)
+        return 'The review for the book {} has been saved'.format(payload['bookId'])
+    except Exception:
+        return 'A unexpected error occurred saving the review for the book: {}'.format(payload['bookId'])
 
 
-@app.route('/books/name/<bookname>')
-def test_endpoint(bookname):
-    return request_gutendex(bookname)
+@app.route('/books/name/<book_name>')
+def search_book(book_name):
+    return request_gutendex(book_name)
 
 
 def filtered_response(res):
@@ -54,6 +60,12 @@ def request_gutendex(bookname):
     uri = 'https://gutendex.com/books?search=' + bookname
     response = requests.get(uri)
     return filtered_response(response.json())
+
+
+def save_review(payload):
+    review_ = Review(book_id=payload['bookId'], rating=payload['rating'], review=payload['review'])
+    db.session.add(review_)
+    db.session.commit()
 
 
 if __name__ == '__main__':
