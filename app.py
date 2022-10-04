@@ -68,7 +68,7 @@ def review():
         return 'A unexpected error occurred saving the review for the book: {}'.format(payload['bookId'])
 
 
-@app.route('/books/name/<book_name>')
+@app.route('/books/search/name/<book_name>')
 def search_book(book_name):
     return request_gutendex_by_bookname(book_name)
 
