@@ -1,3 +1,4 @@
+
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 import requests
@@ -5,9 +6,6 @@ from flask_expects_json import expects_json
 
 app = Flask(__name__)
 db = SQLAlchemy(app)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE_NAME}'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
 class Review(db.Model):
@@ -40,7 +38,7 @@ def calculate_average_rating(review_list):
     try:
         return round(sum(r.rating for r in review_list) / len(review_list), 1)
     except Exception:
-        return 0
+        return '-'
 
 
 def get_user_reviews(review_list):
@@ -97,7 +95,7 @@ def request_gutendex_by_id(book_id):
         uri = 'https://gutendex.com/books/' + book_id
         response = requests.get(uri)
         return filtered_response(response.json())
-    except Exception as e:
+    except Exception:
         return ''
 
 
