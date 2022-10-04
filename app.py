@@ -1,5 +1,3 @@
-import http
-
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 import requests
@@ -30,6 +28,37 @@ schema = {
 }
 
 
+def search_review(book_id):
+    try:
+        review_ = Review.query.filter_by(book_id=book_id).all()
+        return review_
+    except Exception as e:
+        return ['A unexpected error occurred loading reviews: ' + e]
+
+
+def calculate_average_rating(review_list):
+    try:
+        return round(sum(r.rating for r in review_list) / len(review_list), 1)
+    except Exception:
+        return 0
+
+
+def get_user_reviews(review_list):
+    try:
+        return [r.review for r in review_list]
+    except Exception as e:
+        return ['A unexpected error occurred loading reviews: ' + e]
+
+
+@app.route('/books/details/<book_id>')
+def search_details(book_id):
+    review_list = search_review(book_id)
+    book_details_response = request_gutendex_by_id(book_id)
+    book_details_response[0]['rating'] = calculate_average_rating(review_list)
+    book_details_response[0]['reviews'] = get_user_reviews(review_list)
+    return book_details_response
+
+
 @app.route('/books/review', methods=['POST'])
 @expects_json(schema)
 def review():
@@ -43,12 +72,13 @@ def review():
 
 @app.route('/books/name/<book_name>')
 def search_book(book_name):
-    return request_gutendex(book_name)
+    return request_gutendex_by_bookname(book_name)
 
 
 def filtered_response(res):
     books = []
-    for r in res['results']:
+    results = res['results'] if 'results' in res.keys() else [res]
+    for r in results:
         d = {'id': r['id'], 'title': r['title'], 'authors': r['authors'], 'languages': r['languages'],
              'download_count': r['download_count']}
         books.append(d)
@@ -56,10 +86,19 @@ def filtered_response(res):
     return books
 
 
-def request_gutendex(bookname):
+def request_gutendex_by_bookname(bookname):
     uri = 'https://gutendex.com/books?search=' + bookname
     response = requests.get(uri)
     return filtered_response(response.json())
+
+
+def request_gutendex_by_id(book_id):
+    try:
+        uri = 'https://gutendex.com/books/' + book_id
+        response = requests.get(uri)
+        return filtered_response(response.json())
+    except Exception as e:
+        return ''
 
 
 def save_review(payload):
