@@ -7,3 +7,4 @@ sudo docker-compose up
 export DATABASE_URL="mysql+pymysql://root:@localhost:3306/database"
 flask db init
 flask db migrate
+flask run
