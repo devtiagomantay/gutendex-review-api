@@ -1,11 +1,15 @@
-
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 import requests
 from flask_expects_json import expects_json
+from constants.messages import *
+from config import config
+
 
 app = Flask(__name__)
 db = SQLAlchemy(app)
+
+app.config.from_object(config.get('dev'))
 
 
 class Review(db.Model):
@@ -37,23 +41,29 @@ def search_review(book_id):
 def calculate_average_rating(review_list):
     try:
         return round(sum(r.rating for r in review_list) / len(review_list), 1)
-    except Exception:
-        return '-'
+    except ZeroDivisionError:
+        return 'No rating available'
+    except:
+        return 'No rating available'
 
 
 def get_user_reviews(review_list):
     try:
         return [r.review for r in review_list]
     except Exception as e:
-        return ['A unexpected error occurred loading reviews: ' + e]
+        return [REVIEWS_UNKNOWN_ERROR + e]
 
 
-@app.route('/books/details/<book_id>')
+@app.route('/books/details/id=<book_id>')
 def search_details(book_id):
     review_list = search_review(book_id)
     book_details_response = request_gutendex_by_id(book_id)
-    book_details_response[0]['rating'] = calculate_average_rating(review_list)
-    book_details_response[0]['reviews'] = get_user_reviews(review_list)
+    if review_list:
+        book_details_response[0]['rating'] = calculate_average_rating(review_list)
+        book_details_response[0]['reviews'] = get_user_reviews(review_list)
+    elif 'booking details' not in book_details_response[0].keys():
+        book_details_response[0]['rating'] = NO_RATINGS_MSG
+        book_details_response[0]['reviews'] = NO_REVIEWS_MSG
     return book_details_response
 
 
@@ -64,8 +74,8 @@ def review():
         payload = request.json
         save_review(payload)
         return 'The review for the book {} has been saved'.format(payload['bookId'])
-    except Exception:
-        return 'A unexpected error occurred saving the review for the book: {}'.format(payload['bookId'])
+    except:
+        return SAVING_REVIEW_ERROR + payload['bookId']
 
 
 @app.route('/books/search/name/<book_name>')
@@ -94,15 +104,23 @@ def request_gutendex_by_id(book_id):
     try:
         uri = 'https://gutendex.com/books/' + book_id
         response = requests.get(uri)
+        if response.status_code == 404:
+            return [{'booking details': 'The book id {} is not valid'.format(book_id)}]
+        elif response.status_code == 500:
+            return [{'booking details': GUNTEX_API_ERR}]
         return filtered_response(response.json())
-    except Exception:
-        return ''
+    except:
+        return [{'booking details': UNKNOWN_ERROR}]
 
 
 def save_review(payload):
-    review_ = Review(book_id=payload['bookId'], rating=payload['rating'], review=payload['review'])
-    db.session.add(review_)
-    db.session.commit()
+    try:
+        review_ = Review(book_id=payload['bookId'], rating=payload['rating'], review=payload['review'])
+        db.session.add(review_)
+        db.session.commit()
+
+    except:
+        return SAVING_REVIEW_ERROR
 
 
 if __name__ == '__main__':

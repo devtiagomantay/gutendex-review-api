@@ -1,0 +1,7 @@
+{
+  "review" : {
+    "bookId": 10,
+    "rating": 5,
+    "review": "It's a really good book"
+    }
+}

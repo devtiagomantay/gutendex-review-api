@@ -1,0 +1,7 @@
+GUNTEX_API_ERR = 'The book details are not available. Try again later'
+UNKNOWN_ERROR = 'The book details are not available. An unknown error occured. Please try again later'
+BOOK_ID_MISSING = 'Please provide the user id. For instance .../books/details/id=7'
+REVIEWS_UNKNOWN_ERROR = 'A unexpected error occurred loading reviews: '
+SAVING_REVIEW_ERROR = 'A unexpected error occurred saving the review for the book '
+NO_REVIEWS_MSG = 'No reviews for this book'
+NO_RATINGS_MSG = 'No ratings for this book'
