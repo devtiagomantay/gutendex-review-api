@@ -117,7 +117,7 @@ def request_gutendex_by_id(book_id):
         if response.status_code == 404:
             return [{'booking details': 'The book id {} is not valid'.format(book_id)}]
         elif response.status_code == 500:
-            return [{'booking details': GUNTEX_API_ERR}]
+            return [{'booking details': GUTENDEX_API_ERR}]
         return filtered_response(response.json())
     except:
         return [{'booking details': UNKNOWN_ERROR}]

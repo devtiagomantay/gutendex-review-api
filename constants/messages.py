@@ -1,4 +1,4 @@
-GUNTEX_API_ERR = 'The book details are not available. Try again later'
+GUTENDEX_API_ERR = 'The book details are not available. Try again later'
 UNKNOWN_ERROR = 'The book details are not available. An unknown error occured. Please try again later'
 REVIEWS_UNKNOWN_ERROR = 'A unexpected error occurred loading reviews: '
 SAVING_REVIEW_ERROR = 'A unexpected error occurred saving the review for the book '
