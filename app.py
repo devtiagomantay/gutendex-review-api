@@ -9,9 +9,8 @@ from constants.messages import *
 from config import config
 
 app = Flask(__name__)
-db = SQLAlchemy(app)
-
 app.config.from_object(config.get('dev'))
+db = SQLAlchemy(app)
 
 
 def open_schema_file():
@@ -26,15 +25,9 @@ def open_schema_file():
 review_schema = open_schema_file()
 
 
-class Review(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    book_id = db.Column(db.Integer, nullable=False)
-    rating = db.Column(db.Integer, nullable=False)
-    review = db.Column(db.String(500))
-
-
 def search_review(book_id):
     try:
+        from models import Review
         review_ = Review.query.filter_by(book_id=book_id).all()
         return review_
     except:
@@ -127,14 +120,18 @@ def request_gutendex_by_id(book_id):
 
 def save_review(payload):
     try:
+        from models import Review
         review_ = Review(book_id=payload['bookId'], rating=payload['rating'], review=payload['review'])
         db.session.add(review_)
         db.session.commit()
     except sqlalchemy.exc.OperationalError:
         # let the developers know asap ;)
-        raise 'db_error'
-    except:
-        raise 'error'
+        raise Exception('Error connecting database')
+    except sqlalchemy.exc.ProgrammingError:
+        # check database creation
+        raise Exception('Database don\'t exists')
+    except Exception:
+        raise Exception('error')
 
 
 if __name__ == '__main__':
