@@ -1,20 +1,29 @@
 import sqlalchemy.exc
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
-import requests
 from flask_expects_json import expects_json
+import requests
+import sys
+import json
 from constants.messages import *
 from config import config
-import json
-
 
 app = Flask(__name__)
 db = SQLAlchemy(app)
 
 app.config.from_object(config.get('dev'))
 
-with open('./schemas/review.json', 'r') as file:
-    review_schema = json.load(file)
+
+def open_schema_file():
+    try:
+        with open('./schemas/review.json', 'r') as file:
+            return json.load(file)
+    except OSError:
+        print('Could not open the schema file')
+        sys.exit()
+
+
+review_schema = open_schema_file()
 
 
 class Review(db.Model):
