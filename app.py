@@ -2,6 +2,7 @@ import sqlalchemy.exc
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_expects_json import expects_json
+from flask_migrate import Migrate
 import requests
 import sys
 import json
@@ -11,6 +12,7 @@ from config import config
 app = Flask(__name__)
 app.config.from_object(config.get('dev'))
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 
 def open_schema_file():
