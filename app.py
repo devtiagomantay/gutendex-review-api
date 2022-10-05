@@ -1,3 +1,4 @@
+import sqlalchemy.exc
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 import requests
@@ -34,48 +35,57 @@ def search_review(book_id):
     try:
         review_ = Review.query.filter_by(book_id=book_id).all()
         return review_
-    except Exception as e:
-        return ['A unexpected error occurred loading reviews: ' + e]
+    except:
+        return {'error': LOADING_REVIEW_ERROR}
 
 
 def calculate_average_rating(review_list):
     try:
         return round(sum(r.rating for r in review_list) / len(review_list), 1)
     except ZeroDivisionError:
-        return 'No rating available'
+        return NO_RATING
     except:
-        return 'No rating available'
+        return RATING_ERROR
 
 
 def get_user_reviews(review_list):
     try:
         return [r.review for r in review_list]
-    except Exception as e:
-        return [REVIEWS_UNKNOWN_ERROR + e]
+    except:
+        return [REVIEWS_UNKNOWN_ERROR]
+
+
+def get_rating_and_review(review_list, book_details_response):
+    if type(review_list) == dict and 'error' in review_list.keys():
+        return {'rating': LOADING_RATING_ERROR, 'reviews': LOADING_REVIEW_ERROR}
+    elif review_list:
+        return {'rating': calculate_average_rating(review_list), 'reviews': get_user_reviews(review_list)}
+    elif 'booking details' not in book_details_response[0].keys():
+        return {'rating': NO_RATINGS_MSG, 'reviews': NO_REVIEWS_MSG}
+    return None
 
 
 @app.route('/books/details/id=<book_id>')
 def search_details(book_id):
     review_list = search_review(book_id)
     book_details_response = request_gutendex_by_id(book_id)
-    if review_list:
-        book_details_response[0]['rating'] = calculate_average_rating(review_list)
-        book_details_response[0]['reviews'] = get_user_reviews(review_list)
-    elif 'booking details' not in book_details_response[0].keys():
-        book_details_response[0]['rating'] = NO_RATINGS_MSG
-        book_details_response[0]['reviews'] = NO_REVIEWS_MSG
+    result = get_rating_and_review(review_list, book_details_response)
+    if result:
+        book_details_response[0]['rating'] = result['rating']
+        book_details_response[0]['reviews'] = result['reviews']
+
     return book_details_response
 
 
 @app.route('/books/review', methods=['POST'])
 @expects_json(schema)
-def review():
+def review_post():
     try:
         payload = request.json
         save_review(payload)
         return 'The review for the book {} has been saved'.format(payload['bookId'])
     except:
-        return SAVING_REVIEW_ERROR + payload['bookId']
+        return SAVING_REVIEW_ERROR
 
 
 @app.route('/books/search/name/<book_name>')
@@ -118,9 +128,11 @@ def save_review(payload):
         review_ = Review(book_id=payload['bookId'], rating=payload['rating'], review=payload['review'])
         db.session.add(review_)
         db.session.commit()
-
+    except sqlalchemy.exc.OperationalError:
+        # let the developers know asap ;)
+        raise 'db_error'
     except:
-        return SAVING_REVIEW_ERROR
+        raise 'error'
 
 
 if __name__ == '__main__':
