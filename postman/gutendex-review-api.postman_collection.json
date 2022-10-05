@@ -1,0 +1,79 @@
+{
+	"info": {
+		"_postman_id": "47cc0229-d121-482d-85ad-28f1a375070c",
+		"name": "gutendex-review-api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "6608218"
+	},
+	"item": [
+		{
+			"name": "Search books by name (part 1)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}:{{port}}/books/search/name/python",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"books",
+						"search",
+						"name",
+						"python"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get a book details by id (part 3)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}:{{port}}/books/details/id=1",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"books",
+						"details",
+						"id=1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Reviewing books (part 2)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"bookId\": 1,\n    \"rating\": 3,\n    \"review\": \"This is a fine book.\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}:{{port}}/books/review",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"books",
+						"review"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

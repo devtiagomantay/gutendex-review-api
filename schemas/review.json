@@ -1,0 +1,9 @@
+{
+    "type": "object",
+    "properties": {
+        "bookId": {"type": "number"},
+        "rating": {"type": "number"},
+        "review": {"type": "string"}
+    },
+    "required": ["bookId", "rating", "review"]
+}
