@@ -5,6 +5,7 @@ import requests
 from flask_expects_json import expects_json
 from constants.messages import *
 from config import config
+import json
 
 
 app = Flask(__name__)
@@ -12,23 +13,15 @@ db = SQLAlchemy(app)
 
 app.config.from_object(config.get('dev'))
 
+with open('./schemas/review.json', 'r') as file:
+    review_schema = json.load(file)
+
 
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     book_id = db.Column(db.Integer, nullable=False)
     rating = db.Column(db.Integer, nullable=False)
     review = db.Column(db.String(500))
-
-
-schema = {
-    "type": "object",
-    "properties": {
-        "bookId": {"type": "number"},
-        "rating": {"type": "number"},
-        "review": {"type": "string"},
-    },
-    "required": ["bookId", "rating", "review"]
-}
 
 
 def search_review(book_id):
@@ -78,7 +71,7 @@ def search_details(book_id):
 
 
 @app.route('/books/review', methods=['POST'])
-@expects_json(schema)
+@expects_json(review_schema)
 def review_post():
     try:
         payload = request.json

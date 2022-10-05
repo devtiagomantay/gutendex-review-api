@@ -1,7 +1,9 @@
 {
-  "review" : {
-    "bookId": 10,
-    "rating": 5,
-    "review": "It's a really good book"
-    }
+    "type": "object",
+    "properties": {
+        "bookId": {"type": "number"},
+        "rating": {"type": "number"},
+        "review": {"type": "string"}
+    },
+    "required": ["bookId", "rating", "review"]
 }
