@@ -17,7 +17,7 @@ Features:
 chmod 755 script.sh
 ```
 - Run the script `script.sh`:
-- ```
+ ```
 ./script.sh
 ```
 
