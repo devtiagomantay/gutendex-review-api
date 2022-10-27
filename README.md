@@ -21,4 +21,28 @@ chmod 755 script.sh
 ./script.sh
 ```
 
+## Endpoints
+
+The endpoints allow the user search a book, get a book details and review a book.
+
+### Get book details by id
+```
+GET /books/details/id=<BOOK_ID>
+```
+
+### Search books by bookname
+```
+GET /books/search/name/<BOOK_NAME>
+```
+
+### Review a book
+```
+POST /books/review
+PAYLOAD
+{
+    "bookId": 1,
+    "rating": 5,
+    "review": "This book is awesome!"
+}
+```
 
