@@ -1,3 +1,4 @@
+import os
 import sqlalchemy.exc
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
@@ -15,9 +16,24 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 
+class Review(db.Model):
+    """Review model"""
+    __tablename__ = "review"
+    id = db.Column(db.Integer, primary_key=True)
+    book_id = db.Column(db.Integer, nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    review = db.Column(db.String(500))
+
+    def __init__(self, book_id, rating, review):
+        self.book_id = book_id,
+        self.rating = rating,
+        self.review = review
+
+
 def open_schema_file():
     try:
-        with open('./schemas/review.json', 'r') as file:
+        os.chdir(os.getcwd().replace('/tests', '/'))
+        with open('schemas/review.json', 'r') as file:
             return json.load(file)
     except OSError:
         print('Could not open the schema file')
@@ -29,7 +45,6 @@ review_schema = open_schema_file()
 
 def search_review(book_id):
     try:
-        from models import Review
         review_ = Review.query.filter_by(book_id=book_id).all()
         return review_
     except:
@@ -122,7 +137,6 @@ def request_gutendex_by_id(book_id):
 
 def save_review(payload):
     try:
-        from models import Review
         review_ = Review(book_id=payload['bookId'], rating=payload['rating'], review=payload['review'])
         db.session.add(review_)
         db.session.commit()
