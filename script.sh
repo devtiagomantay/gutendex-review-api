@@ -1,5 +1,5 @@
 #!/bin/sh
-sudo apt install python3 virtualenv docker docker-compose git
+sudo apt install python3 virtualenv docker docker-compose git pymysql
 python3 -m virtualenv venv
 source venv/bin/activate
 pip install -r requirements.txt
