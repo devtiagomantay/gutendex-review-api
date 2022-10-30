@@ -1,5 +1,4 @@
 import os
-import sqlalchemy.exc
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_expects_json import expects_json
@@ -9,7 +8,8 @@ import sys
 import json
 from constants.messages import *
 from config import config
-from constants.gutendex import GUTENDEX_BOOK_SEARCH_URL, GUTENDEX_BOOKS_URL
+from constants.gutendex import *
+from review_controller import *
 
 app = Flask(__name__)
 app.config.from_object(config.get('dev'))
@@ -30,14 +30,6 @@ def open_schema_file():
 review_schema = open_schema_file()
 
 
-def search_review(book_id):
-    try:
-        review_ = Review.query.filter_by(book_id=book_id).all()
-        return review_
-    except:
-        return {'error': LOADING_REVIEW_ERROR}
-
-
 def calculate_average_rating(review_list):
     try:
         return round(sum(r.rating for r in review_list) / len(review_list), 1)
@@ -47,18 +39,11 @@ def calculate_average_rating(review_list):
         return RATING_ERROR
 
 
-def get_user_reviews(review_list):
-    try:
-        return [r.review for r in review_list]
-    except:
-        return [REVIEWS_UNKNOWN_ERROR]
-
-
 def get_rating_and_review(review_list, book_details_response):
     if type(review_list) == dict and 'error' in review_list.keys():
         return {'rating': LOADING_RATING_ERROR, 'reviews': LOADING_REVIEW_ERROR}
     elif review_list:
-        return {'rating': calculate_average_rating(review_list), 'reviews': get_user_reviews(review_list)}
+        return {'rating': calculate_average_rating(review_list), 'reviews': [r.review for r in review_list]}
     elif 'booking details' not in book_details_response[0].keys():
         return {'rating': NO_RATINGS_MSG, 'reviews': NO_REVIEWS_MSG}
     return None
@@ -80,6 +65,7 @@ def search_details(book_id):
 @expects_json(review_schema)
 def review_post():
     try:
+        from review_controller import save_review
         payload = request.json
         save_review(payload)
         return 'The review for the book {} has been saved'.format(payload['bookId'])
@@ -120,21 +106,6 @@ def request_gutendex_by_id(book_id):
         return filtered_response(response.json())
     except:
         return [{'booking details': UNKNOWN_ERROR}]
-
-
-def save_review(payload):
-    try:
-        review_ = Review(book_id=payload['bookId'], rating=payload['rating'], review=payload['review'])
-        db.session.add(review_)
-        db.session.commit()
-    except sqlalchemy.exc.OperationalError:
-        # let the developers know asap ;)
-        raise Exception('Error connecting database')
-    except sqlalchemy.exc.ProgrammingError:
-        # check database creation
-        raise Exception('Database don\'t exists')
-    except Exception as e:
-        raise Exception(UNKNOWN_ERROR + 'detail: ' + e)
 
 
 if __name__ == '__main__':
