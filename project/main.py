@@ -9,6 +9,7 @@ import sys
 import json
 from constants.messages import *
 from config import config
+from constants.gutendex import GUTENDEX_BOOK_SEARCH_URL, GUTENDEX_BOOKS_URL
 
 app = Flask(__name__)
 app.config.from_object(config.get('dev'))
@@ -103,14 +104,14 @@ def filtered_response(res):
 
 
 def request_gutendex_by_bookname(bookname):
-    uri = 'https://gutendex.com/books?search=' + bookname
+    uri = GUTENDEX_BOOK_SEARCH_URL + bookname
     response = requests.get(uri)
     return filtered_response(response.json())
 
 
 def request_gutendex_by_id(book_id):
     try:
-        uri = 'https://gutendex.com/books/' + book_id
+        uri = GUTENDEX_BOOKS_URL + book_id
         response = requests.get(uri)
         if response.status_code == 404:
             return [{'booking details': 'The book id {} is not valid'.format(book_id)}]
@@ -132,8 +133,8 @@ def save_review(payload):
     except sqlalchemy.exc.ProgrammingError:
         # check database creation
         raise Exception('Database don\'t exists')
-    except Exception:
-        raise Exception('error')
+    except Exception as e:
+        raise Exception(UNKNOWN_ERROR + 'detail: ' + e)
 
 
 if __name__ == '__main__':
