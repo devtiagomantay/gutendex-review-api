@@ -8,7 +8,7 @@ app = main.app
 db = main.db
 
 
-class BasicTest(unittest.TestCase):
+class ApiTest(unittest.TestCase):
 	def setUp(self):
 		app.config['BASEDIR'] = str(Path(os.getcwd()).parents[0])
 		app.config['TESTING'] = True
@@ -16,21 +16,29 @@ class BasicTest(unittest.TestCase):
 		app.config['DEBUG'] = False
 		app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + \
 												os.path.join(app.config['BASEDIR'], TEST_DB)
+
 		self.app = app.test_client()
 		db.drop_all()
 		db.create_all()
 
 		self.assertEqual(app.debug, False)
 
-		# TODO: add mock data
+	# TODO: add mock data
 
 	def tearDown(self):
 		os.remove(app.config['BASEDIR'] + '/test.db')
 		pass
 
-	def test_search_name_endpoint(self):
-		response = self.app.get('/books/search/name/name', follow_redirects=True)
-		self.assertEqual(response.status_code, 200)
+	def test_search_book_endpoint_check_status_code_equals_200(self):
+		with app.test_client() as client:
+			response = client.get('/books/search/name/freedom', follow_redirects=True)
+			self.assertEqual(response.status_code, 200)
+
+	def test_book_detail_endpoint_check_status_code_equals_200(self):
+		with app.test_client() as client:
+			response = client.get('/books/search/name/freedom', follow_redirects=True)
+
+			self.assertEqual(response.status_code, 200)
 
 
 if __name__ == "__main__":
